@@ -1,6 +1,6 @@
 # IdentityChain
 
-[![PyPI](https://img.shields.io/pypi/v/identitychain?color=blue&label=PyPI)](https://pypi.org/project/identitychain/) [![CI](https://github.com/marcusm117/IdentityChain/workflows/CI/badge.svg)](https://github.com/marcusm117/IdentityChain/actions/workflows/build.yml) [![License](https://img.shields.io/badge/License-Apache_2.0-green)](https://github.com/marcusm117/IdentityChain/blob/main/LICENSE) [![Issues](https://img.shields.io/github/issues/marcusm117/IdentityChain?color=red&label=Issues)](https://github.com/marcusm117/IdentityChain/issues)
+[![PyPI](https://img.shields.io/pypi/v/identitychain?color=blue&label=PyPI)](https://pypi.org/project/identitychain/) [![CI](https://github.com/marcusm117/IdentityChain/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/marcusm117/IdentityChain/actions/workflows/build.yml) [![License](https://img.shields.io/badge/License-Apache_2.0-green)](https://github.com/marcusm117/IdentityChain/blob/main/LICENSE) [![Issues](https://img.shields.io/github/issues/marcusm117/IdentityChain?color=red&label=Issues)](https://github.com/marcusm117/IdentityChain/issues)
 
 The IdentityChain Framework for Code Large Language Models (Code LLMs) Evaluation.
 
@@ -13,15 +13,17 @@ Create and Activate a Conda Environment.
    conda activate idchain
    ```
 
-Clone this Repository to your Local Environment.
+Install from PyPI with all dependencies.
+
+   ``` bash
+   pip3 install identitychain
+   pip3 install -r requirements.txt
+   ```
+
+Install from source with all dependencies.
 
    ``` bash
    git clone https://github.com/marcusm117/IdentityChain.git
-   ```
-
-Install the Library with all Dependencies.
-
-   ``` bash
    cd IdentityChain
    make develop
    ```
