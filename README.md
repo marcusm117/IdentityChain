@@ -1,5 +1,9 @@
 # IdentityChain
 
+[![PyPI](https://img.shields.io/pypi/v/identitychain?color=blue&label=PyPI)](https://pypi.org/project/identitychain/) [![CI](https://github.com/marcusm117/IdentityChain/workflows/CI/badge.svg)](https://github.com/marcusm117/IdentityChain/actions/workflows/build.yml) [![License](https://img.shields.io/badge/License-Apache_2.0-green)](https://github.com/marcusm117/IdentityChain/blob/main/LICENSE) [![Issues](https://img.shields.io/github/issues/marcusm117/IdentityChain?color=red&label=Issues)](https://github.com/marcusm117/IdentityChain/issues)
+
+The IdentityChain Framework for Code Large Language Models (Code LLMs) Evaluation.
+
 ## Installation
 
 Create and Activate a Conda Environment.

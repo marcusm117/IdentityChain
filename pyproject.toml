@@ -14,7 +14,7 @@ py-modules = ["identitychain"]
 [project]
 name = "identitychain"
 authors = [{name = "marcusm117, Robin-Y-Ding", email = "authors@gmail.com"}]
-description="Code Model Trust Evaluation"
+description="Evaluation Framework for Code Large Language Models (Code LLMs)"
 readme = "README.md"
 version = "0.0.1"
 requires-python = ">=3.10"
@@ -35,7 +35,7 @@ file = "LICENSE"
 
 
 [project.urls]
-repository = "https://github.com/marcusm117/"
+repository = "https://github.com/marcusm117/IdentityChain/"
 
 
 [project.optional-dependencies]
