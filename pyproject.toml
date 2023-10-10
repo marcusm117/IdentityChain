@@ -1,0 +1,125 @@
+[build-system]
+requires = [
+    "setuptools",
+    "setuptools-scm",
+    "wheel",
+]
+build-backend="setuptools.build_meta"
+
+
+[tool.setuptools]
+py-modules = ["identitychain"]
+
+
+[project]
+name = "identitychain"
+authors = [{name = "marcusm117, Robin-Y-Ding", email = "authors@gmail.com"}]
+description="Code Model Trust Evaluation"
+readme = "README.md"
+version = "0.0.1"
+requires-python = ">=3.10"
+dependencies = []
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+
+[project.license]
+file = "LICENSE"
+
+
+[project.urls]
+repository = "https://github.com/marcusm117/"
+
+
+[project.optional-dependencies]
+develop = [
+    "black>=23",
+    "black[jupyter]",
+    "bump2version>=1.0.0",
+    "check-manifest",
+    "flake8>=3.7.8",
+    "flake8-black>=0.3.1",
+    "flake8-pyproject",
+    "pylint>=2.17.0",
+    "mypy",
+    "pytest>=7.2.0",
+    "pytest-cov>=2.6.1",
+    "twine",
+    "wheel",
+    "tqdm",
+    "pandas",
+    "xlsxwriter",
+    "numpy",
+    "evaluate",
+    "codebleu",
+    "rouge_score",
+    "matplotlib",
+    "openai",
+    "accelerate",
+    "transformers",
+    "datasets",
+    "deepspeed",
+    "bitsandbytes==0.38.1",
+    "sentencepiece",
+    "protobuf==3.20.2",
+]
+
+
+[tool.black]
+color = true
+line-length = 120
+target-version = ['py310']
+skip-string-normalization = true
+
+
+[tool.check-manifest]
+ignore = []
+
+
+[tool.flake8]
+ignore = ['E203', 'W503']
+max-line-length=120
+exclude=[
+    'identitychain/tests/*'
+]
+per-file-ignores= [
+    'identitychain/__init__.py:F401, F403'
+]
+
+
+[tool.isort]
+line_length = 120
+known_first_party = 'pydantic'
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+combine_as_imports = true
+
+
+[tool.mypy]
+python_version = '3.10'
+# show_error_codes = true
+# follow_imports = 'silent'
+# strict_optional = true
+# warn_redundant_casts = true
+# warn_unused_ignores = true
+# disallow_any_generics = true
+# check_untyped_defs = true
+# no_implicit_reexport = true
+# warn_unused_configs = true
+# disallow_subclassing_any = true
+# disallow_incomplete_defs = true
+# disallow_untyped_decorators = true
+# disallow_untyped_calls = true
+
+
+[tool.pytest.ini_options]
+asyncio_mode = 'strict'
+testpaths = 'identitychain/tests'

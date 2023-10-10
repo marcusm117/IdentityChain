@@ -1,0 +1,16 @@
+tqdm
+pandas
+xlsxwriter
+numpy
+evaluate
+codebleu
+rouge_score
+matplotlib
+openai
+accelerate
+transformers
+datasets
+deepspeed
+bitsandbytes==0.38.1
+sentencepiece
+protobuf==3.20.2

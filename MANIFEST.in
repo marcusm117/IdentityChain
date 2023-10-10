@@ -1,0 +1,29 @@
+graft identitychain
+
+include LICENSE
+include README.md
+include .bumpversion.cfg
+include pyproject.toml
+include Makefile
+include requirements.txt
+recursive-include scripts *.py
+recursive-include scripts *.sh
+recursive-include examples *.py
+recursive-include examples *.sh
+
+prune .vscode
+prune .github
+prune archive
+prune data
+prune docs
+exclude .gitignore
+exclude .gitattributes
+
+
+# Patterns to exclude from any directory
+global-exclude *~
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .git
+global-exclude .ipynb_checkpoints
+global-exclude .DS_Store

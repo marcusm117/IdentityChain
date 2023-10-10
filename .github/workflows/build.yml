@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+    paths-ignore:
+      - CONTRIBUTING.md
+      - LICENSE
+      - README.md
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.10', '3.11']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: "pip"
+        cache-dependency-path: 'pyproject.toml'
+
+    - name: Install dependencies
+      run: |
+        make develop
+    - name: Build 
+      run: |
+        make build
+    - name: Lint
+      run: |
+        make lint
+    - name: Checks
+      run: |
+        make checks
+    - name: Test
+      run: |
+        make test
