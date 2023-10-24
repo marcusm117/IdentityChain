@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/identitychain?color=blue&label=PyPI)](https://pypi.org/project/identitychain/) [![CI](https://github.com/marcusm117/IdentityChain/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/marcusm117/IdentityChain/actions/workflows/build.yml) [![License](https://img.shields.io/badge/License-Apache_2.0-green)](https://github.com/marcusm117/IdentityChain/blob/main/LICENSE) [![Issues](https://img.shields.io/github/issues/marcusm117/IdentityChain?color=red&label=Issues)](https://github.com/marcusm117/IdentityChain/issues)
 
-The IdentityChain Framework for Code Large Language Models (Code LLMs) Evaluation in The Paper [Beyond Accuracy: Evaluating Self-Consistency of Code Large Language Models with IdentityChain](https://arxiv.org/abs/2310.14053)
+The IdentityChain Framework for Code Large Language Models (Code LLMs) Evaluation. Official Implementation of The Paper [Beyond Accuracy: Evaluating Self-Consistency of Code Large Language Models with IdentityChain](https://arxiv.org/abs/2310.14053)
 
 ## Installation
 
