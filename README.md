@@ -2,7 +2,11 @@
 
 [![PyPI](https://img.shields.io/pypi/v/identitychain?color=blue&label=PyPI)](https://pypi.org/project/identitychain/) [![CI](https://github.com/marcusm117/IdentityChain/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/marcusm117/IdentityChain/actions/workflows/build.yml) [![License](https://img.shields.io/badge/License-Apache_2.0-green)](https://github.com/marcusm117/IdentityChain/blob/main/LICENSE) [![Issues](https://img.shields.io/github/issues/marcusm117/IdentityChain?color=red&label=Issues)](https://github.com/marcusm117/IdentityChain/issues)
 
-The IdentityChain Framework for Code Large Language Models (Code LLMs) Evaluation. Official Implementation of The Paper [Beyond Accuracy: Evaluating Self-Consistency of Code Large Language Models with IdentityChain](https://arxiv.org/abs/2310.14053)
+The IdentityChain Framework for Code Large Language Models (Code LLMs) Evaluation. Official implementation of the paper [Beyond Accuracy: Evaluating Self-Consistency of Code Large Language Models with IdentityChain](https://arxiv.org/abs/2310.14053).
+
+The IdentityChain Framework evaluates the NL-to-PL (Code Generation) Accuracy, PL-to-NL (Code Summurization) Accuracy, and the Self-Consistency across the two tasks. It also provides a fine-grained analysis of the model's performance so that you can pinpoint the exact step and precide problem where the model makes a self-inconsistency violation.
+
+<img src="./images/main.png" alt="image" width="700" height="auto">
 
 ## Installation
 
