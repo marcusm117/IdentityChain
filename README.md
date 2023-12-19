@@ -4,9 +4,9 @@
 
 The IdentityChain Framework for Code Large Language Models (Code LLMs) Evaluation. Official implementation of the paper [Beyond Accuracy: Evaluating Self-Consistency of Code Large Language Models with IdentityChain](https://arxiv.org/abs/2310.14053).
 
-The IdentityChain Framework evaluates the NL-to-PL (Code Generation) Accuracy, PL-to-NL (Code Summurization) Accuracy, and the Self-Consistency across the two tasks. It also provides a fine-grained analysis of the model's performance so that you can pinpoint the exact step and precide problem where the model makes a self-inconsistency violation.
+The IdentityChain Framework evaluates the NL-to-PL (Code Generation) Accuracy, PL-to-NL (Code Summurization) Accuracy, and the Self-Consistency across the two tasks. It also provides a fine-grained analysis of the model's performance so that you can pinpoint the exact step and problem where the model makes a self-inconsistency violation.
 
-<img src="./images/main.png" alt="image" width="750" height="auto">
+<img src="./images/main.png" alt="image" width="780" height="auto">
 
 ## Installation
 
