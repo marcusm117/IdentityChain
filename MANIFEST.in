@@ -6,6 +6,7 @@ include .bumpversion.cfg
 include pyproject.toml
 include Makefile
 include requirements.txt
+recursive-include images *
 recursive-include scripts *.py
 recursive-include scripts *.sh
 recursive-include examples *.py
