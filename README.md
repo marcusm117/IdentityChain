@@ -51,6 +51,8 @@ To evaluate your model using IdentityChain, you need to prepare the followings:
 
 See [run_identity_chain_openai.py](./examples/run_identity_chain_openai.py) for an example of how to use IdentityChain to evaluate OpenAI models.
 
+See [run_identity_chain_google.py](./examples/run_identity_chain_google.py) for an example of how to use IdentityChain to evaluate Google models.
+
 See [run_identity_chain_huggingface.py](./examples/run_identity_chain_huggingface.py) for an example of how to use IdentityChain to evaluate HuggingFace open-source models. This example script already includes the following models:
 
 1. CodeLlama-Instruct-hf (7B, 13B, 34B)
