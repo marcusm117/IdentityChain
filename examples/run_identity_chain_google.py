@@ -206,22 +206,14 @@ def get_google_model_chat(
     tokenizer,
     args,
 ):
-    # create generation config
-    generation_config = genai.GenerationConfig(
-        candidate_count=1,
-        max_output_tokens=args.gen_length,
-        temperature=args.temperature,
-    )
-
-    # creat the model
-    model = genai.GenerativeModel(model, generation_config=generation_config)
-
     # select the correct in-context learning prompt based on the task
     messages = prompt + user_input
 
     # get response from OpenAI
     try:
+        # get the response
         response = model.generate_content(messages)
+        # extract the response text content
         response_content = response.candidates[0].content.parts[0].text
         # if the API is unstable, consider sleeping for a short period of time after each request
         # time.sleep(0.2)
@@ -288,17 +280,43 @@ def main():
     # define the output path
     output_path = f"{args.output_dir}/IDChain_{model_name}_tmp{tmp}{greedy}_len{len}_{bootstrap}_{pass_only}_{mask_name}_{version}_{input_file}"
 
+    # configure prompts for HumanEvalPlus-Mini-v0.1.6
+    if args.input_path.endswith("EvalPlus-Mini-v0.1.6_reformatted.jsonl"):
+        nl_2_pl_prompt = NL_2_PL_HUMANEVAL_STR
+        pl_2_nl_prompt = PL_2_NL_HUMANEVAL_STR
+    # configure prompts for MBPP-S_test
+    elif args.input_path.endswith("MBPP-S_test_reformatted.jsonl"):
+        nl_2_pl_prompt = NL_2_PL_MBPP_STR
+        pl_2_nl_prompt = PL_2_NL_MBPP_STR
+    else:
+        raise ValueError(f"Input file {args.input_path} not supported")
+
+    # for debugging
+    print("--------- Prompt Configuration -----------")
+    print(nl_2_pl_prompt)
+    print(pl_2_nl_prompt)
+    print("-----------------------------------------")
+
+    # create generation config
+    generation_config = genai.GenerationConfig(
+        candidate_count=1,
+        max_output_tokens=args.gen_length,
+        temperature=args.temperature,
+    )
+    # creat the model object
+    model_obj = genai.GenerativeModel(args.model_name_or_path, generation_config=generation_config)
+
     # create an Identity Chain
     my_chain = IdentityChain(
-        model=args.model_name_or_path,
+        model=model_obj,
         tokenizer=None,
         args=args,
         input_path=input_path,
         output_path=output_path,
         get_model_response_NL_to_PL=get_google_model_chat,
         get_model_response_PL_to_NL=get_google_model_chat,
-        prompt_NL_to_PL=NL_2_PL_HUMANEVAL_STR,
-        prompt_PL_to_NL=PL_2_NL_HUMANEVAL_STR,
+        prompt_NL_to_PL=nl_2_pl_prompt,
+        prompt_PL_to_NL=pl_2_nl_prompt,
         bootstrap_method=args.bootstrap_method,
         length=args.chain_length,
     )
