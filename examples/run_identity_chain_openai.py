@@ -185,7 +185,7 @@ def get_openai_chat(
         return response_content
 
     # when encounter APIError, sleep for 5 or specified seconds and try again
-    except (openai.OpenAIError) as error:
+    except openai.OpenAIError as error:
         retry_time = error.retry_after if hasattr(error, "retry_after") else 5
         print(f"{error}. Sleeping for {retry_time} seconds ...")
         time.sleep(retry_time)
