@@ -597,7 +597,7 @@ def main():
     # unzip input file
     input_path = args.input_path
     input_file = input_path.split("/")[-1]
-    g_unzip(f"../data/{input_file}.gz", input_path)
+    g_unzip(f"{input_path}.gz", input_path)
 
     # for output path naming
     model_name = args.model_name_or_path.split("/")[-1]

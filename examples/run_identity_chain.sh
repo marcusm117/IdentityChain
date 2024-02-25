@@ -14,7 +14,7 @@ export IDENTITY_CHAIN_HOME=YOUR_OWN_PATH/IdentityChain  # no / at the end
 
 # for open-source models from HuggingFace, when using greedy, add the flag --greedy_early_stop to accelerate
 # for OpenAI models, don't use --greedy_early_stop!!! temperature = 0 is NOT greedy!!!
-# for HumanEvalPlus-Mini-v0.1.6_reformatted.jsonl, use --resume_task_bs 1, since HumanEval/0 is used for prompt
+# for EvalPlus-Mini-v0.1.6_reformatted.jsonl, use --resume_task_bs 1, since HumanEval/0 is used for prompt
 # for MBPP-S_test_reformatted.jsonl, use --resume_task_bs 0, since there's a separate prompt split
 
 for MODEL in "bigcode/starcoderbase-1b"  # feel free to add other supported models
@@ -27,10 +27,11 @@ do
 			OUTPUT_DIR=${IDENTITY_CHAIN_HOME}/tmp/${MODEL_NAME}
 			mkdir -p $OUTPUT_DIR
 			# change this to python run_identity_chain_openai.py if you are evaluating OpenAI models
-			python run_identity_chain_huggingface.py \
+			# change this to python run_identity_chain_google.py if you are evaluating Google models
+			python ${IDENTITY_CHAIN_HOME}/examples/run_identity_chain_huggingface.py \
 				--model_name_or_path $MODEL \
 				--hf_dir $HF_HOME \
-				--input_path ${IDENTITY_CHAIN_HOME}/tmp/${DATASET} \
+				--input_path ${IDENTITY_CHAIN_HOME}/data/${DATASET} \
 				--output_dir $OUTPUT_DIR \
 				--seq_length 1536 \
 				--gen_len 512 \

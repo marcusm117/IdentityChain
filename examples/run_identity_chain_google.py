@@ -8,7 +8,7 @@ import os
 import time
 
 # External Modules
-import openai
+import google.generativeai as genai
 
 # Internal Modules
 from identitychain import IdentityChain
@@ -16,7 +16,7 @@ from identitychain.utils import g_unzip
 
 
 # add your OpenAI API key here
-openai_client = openai.OpenAI(api_key="YOUR_API_KEY")
+genai.configure(api_key="YOUR_API_KEY")
 
 
 # prompt settings
@@ -160,8 +160,46 @@ PL_2_NL_MBPP = [
 ]
 
 
-# get completion from an OpenAI chat model
-def get_openai_chat(
+# convert the structured prompts to strings
+NL_2_PL_HUMANEVAL_STR = (
+    NL_2_PL_HUMANEVAL[0]["content"]
+    + "User Input:\n"
+    + NL_2_PL_HUMANEVAL[1]["content"]
+    + "Your Output:\n"
+    + NL_2_PL_HUMANEVAL[2]["content"]
+    + NL_2_PL_HUMANEVAL[3]["content"]
+)
+
+PL_2_NL_HUMANEVAL_STR = (
+    PL_2_NL_HUMANEVAL[0]["content"]
+    + "User Input:\n"
+    + PL_2_NL_HUMANEVAL[1]["content"]
+    + "Your Output:\n"
+    + PL_2_NL_HUMANEVAL[2]["content"]
+    + PL_2_NL_HUMANEVAL[3]["content"]
+)
+
+NL_2_PL_MBPP_STR = (
+    NL_2_PL_MBPP[0]["content"]
+    + "User Input:\n"
+    + NL_2_PL_MBPP[1]["content"]
+    + "Your Output:\n"
+    + NL_2_PL_MBPP[2]["content"]
+    + NL_2_PL_MBPP[3]["content"]
+)
+
+PL_2_NL_MBPP_STR = (
+    PL_2_NL_MBPP[0]["content"]
+    + "User Input:\n"
+    + PL_2_NL_MBPP[1]["content"]
+    + "Your Output:\n"
+    + PL_2_NL_MBPP[2]["content"]
+    + PL_2_NL_MBPP[3]["content"]
+)
+
+
+# get completion from a Google model
+def get_google_model_chat(
     prompt,
     user_input,
     model,
@@ -169,37 +207,29 @@ def get_openai_chat(
     args,
 ):
     # select the correct in-context learning prompt based on the task
-    messages = prompt + [{"role": "user", "content": user_input}]
+    messages = prompt + user_input
 
     # get response from OpenAI
     try:
-        response = openai_client.chat.completions.create(
-            model=model,
-            temperature=args.temperature,
-            max_tokens=args.gen_length,
-            messages=messages,
-        )
-        response_content = response.choices[0].message.content
+        # get the response
+        response = model.generate_content(messages)
+        # print(response.candidates)
+        # extract the response text content
+        response_content = response.candidates[0].content.parts[0].text
         # if the API is unstable, consider sleeping for a short period of time after each request
-        # time.sleep(0.2)
+        time.sleep(0.5)
         return response_content
 
     # when encounter APIError, sleep for 5 or specified seconds and try again
-    except openai.OpenAIError as error:
+    except Exception as error:
         retry_time = error.retry_after if hasattr(error, "retry_after") else 5
         print(f"{error}. Sleeping for {retry_time} seconds ...")
         time.sleep(retry_time)
-        return get_openai_chat(
-            prompt,
-            user_input,
-            model,
-            tokenizer,
-            args,
-        )
+        return get_google_model_chat(prompt, user_input, model, tokenizer, args)
 
 
 # EXAMPLE USAGE:
-# python run_identity_chain_openai.py
+# python run_identity_chain_google.py
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_name_or_path', type=str, help='Path to the model')
@@ -253,12 +283,12 @@ def main():
 
     # configure prompts for HumanEvalPlus-Mini-v0.1.6
     if args.input_path.endswith("EvalPlus-Mini-v0.1.6_reformatted.jsonl"):
-        nl_2_pl_prompt = NL_2_PL_HUMANEVAL
-        pl_2_nl_prompt = PL_2_NL_HUMANEVAL
+        nl_2_pl_prompt = NL_2_PL_HUMANEVAL_STR
+        pl_2_nl_prompt = PL_2_NL_HUMANEVAL_STR
     # configure prompts for MBPP-S_test
     elif args.input_path.endswith("MBPP-S_test_reformatted.jsonl"):
-        nl_2_pl_prompt = NL_2_PL_MBPP
-        pl_2_nl_prompt = PL_2_NL_MBPP
+        nl_2_pl_prompt = NL_2_PL_MBPP_STR
+        pl_2_nl_prompt = PL_2_NL_MBPP_STR
     else:
         raise ValueError(f"Input file {args.input_path} not supported")
 
@@ -268,15 +298,24 @@ def main():
     print(pl_2_nl_prompt)
     print("-----------------------------------------")
 
+    # create generation config
+    generation_config = genai.GenerationConfig(
+        candidate_count=1,
+        max_output_tokens=args.gen_length,
+        temperature=args.temperature,
+    )
+    # creat the model object
+    model_obj = genai.GenerativeModel(args.model_name_or_path, generation_config=generation_config)
+
     # create an Identity Chain
     my_chain = IdentityChain(
-        model=args.model_name_or_path,
+        model=model_obj,
         tokenizer=None,
         args=args,
         input_path=input_path,
         output_path=output_path,
-        get_model_response_NL_to_PL=get_openai_chat,
-        get_model_response_PL_to_NL=get_openai_chat,
+        get_model_response_NL_to_PL=get_google_model_chat,
+        get_model_response_PL_to_NL=get_google_model_chat,
         prompt_NL_to_PL=nl_2_pl_prompt,
         prompt_PL_to_NL=pl_2_nl_prompt,
         bootstrap_method=args.bootstrap_method,
