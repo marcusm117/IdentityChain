@@ -13,7 +13,7 @@ export IDENTITY_CHAIN_HOME=YOUR_OWN_PATH/IdentityChain  # no / at the end
 # however, the results may be different from what we report in the paper
 
 # for open-source models from HuggingFace, when using greedy, add the flag --greedy_early_stop to accelerate
-# for OpenAI/Google models, don't use --greedy_early_stop!!! temperature = 0 is NOT greedy!!!
+# for OpenAI models, don't use --greedy_early_stop!!! temperature = 0 is NOT greedy!!!
 # for EvalPlus-Mini-v0.1.6_reformatted.jsonl, use --resume_task_bs 1, since HumanEval/0 is used for prompt
 # for MBPP-S_test_reformatted.jsonl, use --resume_task_bs 0, since there's a separate prompt split
 
