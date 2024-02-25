@@ -16,7 +16,7 @@ from identitychain.utils import g_unzip
 
 
 # add your OpenAI API key here
-openai.api_key = ""
+openai_client = openai.OpenAI(api_key="YOUR_API_KEY")
 
 
 # prompt settings
@@ -173,21 +173,21 @@ def get_openai_chat(
 
     # get response from OpenAI
     try:
-        response = openai.ChatCompletion.create(
+        response = openai_client.chat.completions.create(
             model=model,
             temperature=args.temperature,
             max_tokens=args.gen_length,
             messages=messages,
         )
-        response_content = response["choices"][0]["message"]["content"]
+        response_content = response.choices[0].message.content
         # if the API is unstable, consider sleeping for a short period of time after each request
         # time.sleep(0.2)
         return response_content
 
-    # when encounter RateLimit or Connection Error, sleep for 5 or specified seconds and try again
-    except (openai.error.RateLimitError, openai.error.Timeout, openai.error.APIConnectionError) as error:
+    # when encounter APIError, sleep for 5 or specified seconds and try again
+    except (openai.OpenAIError) as error:
         retry_time = error.retry_after if hasattr(error, "retry_after") else 5
-        print(f"Rate Limit or Connection Error. Sleeping for {retry_time} seconds ...")
+        print(f"{error}. Sleeping for {retry_time} seconds ...")
         time.sleep(retry_time)
         return get_openai_chat(
             prompt,
@@ -236,7 +236,7 @@ def main():
     # unzip input file
     input_path = args.input_path
     input_file = input_path.split("/")[-1]
-    g_unzip(f"../data/{input_file}.gz", input_path)
+    g_unzip(f"{input_path}.gz", input_path)
 
     # for output path naming
     model_name = args.model_name_or_path.split("/")[-1]

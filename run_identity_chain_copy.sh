@@ -2,8 +2,8 @@
 export CUDA_VISIBLE_DEVICES=0
 
 # set your HuggingFace home path and your IdentityChain home path
-export HF_HOME=YOUR_OWN_PATH/huggingface
-export IDENTITY_CHAIN_HOME=YOUR_OWN_PATH/IdentityChain  # no / at the end
+export HF_HOME="/proj/arise/arise/jm5025/huggingface"
+export IDENTITY_CHAIN_HOME="/proj/arise/arise/jm5025/projects/01_IdentityChain"  # no / at the end
 
 # the folloiwng parameters
 # --seq_length 1536,
@@ -17,7 +17,7 @@ export IDENTITY_CHAIN_HOME=YOUR_OWN_PATH/IdentityChain  # no / at the end
 # for EvalPlus-Mini-v0.1.6_reformatted.jsonl, use --resume_task_bs 1, since HumanEval/0 is used for prompt
 # for MBPP-S_test_reformatted.jsonl, use --resume_task_bs 0, since there's a separate prompt split
 
-for MODEL in "bigcode/starcoderbase-1b"  # feel free to add other supported models
+for MODEL in "gpt-4-0125-preview"  # feel free to add other supported models
 do
 	for DATASET in "EvalPlus-Mini-v0.1.6_reformatted.jsonl"  # feel free add other supported datasets
 	do
@@ -27,8 +27,7 @@ do
 			OUTPUT_DIR=${IDENTITY_CHAIN_HOME}/tmp/${MODEL_NAME}
 			mkdir -p $OUTPUT_DIR
 			# change this to python run_identity_chain_openai.py if you are evaluating OpenAI models
-			# change this to python run_identity_chain_google.py if you are evaluating Google models
-			python run_identity_chain_huggingface.py \
+			python examples/run_identity_chain_openai.py \
 				--model_name_or_path $MODEL \
 				--hf_dir $HF_HOME \
 				--input_path ${IDENTITY_CHAIN_HOME}/data/${DATASET} \
