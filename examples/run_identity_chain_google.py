@@ -213,10 +213,11 @@ def get_google_model_chat(
     try:
         # get the response
         response = model.generate_content(messages)
+        # print(response.candidates)
         # extract the response text content
         response_content = response.candidates[0].content.parts[0].text
         # if the API is unstable, consider sleeping for a short period of time after each request
-        # time.sleep(0.2)
+        time.sleep(0.5)
         return response_content
 
     # when encounter APIError, sleep for 5 or specified seconds and try again
