@@ -30,7 +30,12 @@ INSTRUCTION_MODELS = [
     "codellama/CodeLlama-7b-Instruct-hf",
     "codellama/CodeLlama-13b-Instruct-hf",
     "codellama/CodeLlama-34b-Instruct-hf",
+    "codellama/CodeLlama-70b-Instruct-hf",
     "HuggingFaceH4/starchat-beta",
+    "deepseek-ai/deepseek-coder-1.3b-instruct",
+    "deepseek-ai/deepseek-coder-6.7b-instruct",
+    "deepseek-ai/deepseek-coder-33b-instruct",
+    "deepseek-ai/deepseek-coder-7b-instruct-v1.5",
 ]
 FOUNDATION_MODELS = [
     "bigcode/starcoder",
@@ -42,6 +47,11 @@ FOUNDATION_MODELS = [
     "codellama/CodeLlama-7b-hf",
     "codellama/CodeLlama-13b-hf",
     "codellama/CodeLlama-34b-hf",
+    "codellama/CodeLlama-70b-hf",
+    "deepseek-ai/deepseek-coder-1.3b-base",
+    "deepseek-ai/deepseek-coder-6.7b-base",
+    "deepseek-ai/deepseek-coder-33b-base",
+    "deepseek-ai/deepseek-coder-7b-base-v1.5",
 ]
 
 
@@ -514,6 +524,28 @@ def get_completion_starcoder_fim(
     # Debug
     print(completion)
     return completion
+
+
+def get_completion_deepseek(
+    prompt, user_input, model, tokenizer, args
+):  # prompt is ONE_SHOT_HUMANEVAL or ONE_SHOT_MBPP
+    user_input = prompt + user_input
+    output = generate_text(model, tokenizer, user_input.strip(), args)
+    completion = output[0]["generated_text"]
+    # post-processing: extract the function body
+    processed_completion = ""
+    completion_lines = completion.split("\n")
+    start = False
+    for line in completion_lines:
+        if line.startswith("    "):
+            start = True
+            processed_completion += line + "\n"
+        else:
+            if start:
+                break
+    # Debug
+    print(processed_completion)
+    return processed_completion
 
 
 # EXAMPLE USAGE:
