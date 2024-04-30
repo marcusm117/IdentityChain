@@ -173,9 +173,24 @@ ONE_SHOT_HUMANEVAL = (
     'if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False\n\n'
 )
 
+ONE_SHOT_FIM_HUMANEVAL = (
+    '<pre_token>def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    """\n'
+    '<suf_token>    """\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        '
+    'if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False\n\n'
+    '<mid_token>'
+    'Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    '
+    '>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n'
+)
+
 ONE_SHOT_MBPP = (
     'def similar_elements(test_tup1, test_tup2):\n    """ Write a function to find the shared elements from the given two lists.\n    '
     '"""\n    res = tuple(set(test_tup1) & set(test_tup2))\n    return (res)\n\n'
+)
+
+ONE_SHOT_FIM_MBPP = (
+    '<pre_token>def similar_elements(test_tup1, test_tup2):\n    """\n'
+    '<suf_token>    """\n    res = tuple(set(test_tup1) & set(test_tup2))\n    return (res)\n\n'
+    '<mid_token>Write a function to find the shared elements from the given two lists.\n'
 )
 
 
@@ -332,14 +347,24 @@ def fill_in_middle(
     suf_token,
     mid_token,
 ):
-    # prompt is ONE_SHOT_HUMANEVAL or ONE_SHOT_MBPP
-    function_signature = prompt + function_signature
+    # custimize the one-shot example by replacing the string "<pre-token>" with the actual pre-token etc.
+    prompt = (
+        prompt.replace("<pre_token>", pre_token).replace("<suf_token>", suf_token).replace("<mid_token>", mid_token)
+    )
     fim_prompt = ""
 
     # construct the fill-in-the-middle prompt
     fim_prompt += (
-        pre_token + function_signature + "    \"\"\"\n    " + suf_token + "    \"\"\"\n" + function_body + mid_token
+        prompt
+        + pre_token
+        + function_signature
+        + "    \"\"\"\n    "
+        + suf_token
+        + "    \"\"\"\n"
+        + function_body
+        + mid_token
     )
+
     # DEBUG
     # print(fim_prompt)
 
@@ -544,7 +569,7 @@ def get_completion_codellama(
 
 def get_completion_codellama_fim(
     prompt, function_signature, function_body, model, tokenizer, args
-):  # prompt is ONE_SHOT_HUMANEVAL or ONE_SHOT_MBPP
+):  # prompt is ONE_SHOT_FIM_HUMANEVAL or ONE_SHOT_FIM_MBPP
     return fill_in_middle(
         prompt=prompt,
         function_signature=function_signature,
@@ -572,7 +597,7 @@ def get_completion_starcoder(
 
 def get_completion_starcoder_fim(
     prompt, function_signature, function_body, model, tokenizer, args
-):  # prompt is ONE_SHOT_HUMANEVAL or ONE_SHOT_MBPP
+):  # prompt is ONE_SHOT_FIM_HUMANEVAL or ONE_SHOT_FIM_MBPP
     return fill_in_middle(
         prompt=prompt,
         function_signature=function_signature,
@@ -600,7 +625,7 @@ def get_completion_deepseek(
 
 def get_completion_deepseek_fim(
     prompt, function_signature, function_body, model, tokenizer, args
-):  # prompt is ONE_SHOT_HUMANEVAL or ONE_SHOT_MBPP
+):  # prompt is ONE_SHOT_FIM_HUMANEVAL or ONE_SHOT_FIM_MBPP
     return fill_in_middle(
         prompt=prompt,
         function_signature=function_signature,
@@ -753,7 +778,7 @@ def main():
         elif args.model_name_or_path in FOUNDATION_MODELS:
             # both nl_2_pl and pl_2_nl prompts are the same for completion models
             nl_2_pl_prompt = ONE_SHOT_HUMANEVAL
-            pl_2_nl_prompt = ONE_SHOT_HUMANEVAL
+            pl_2_nl_prompt = ONE_SHOT_FIM_HUMANEVAL
         else:
             raise ValueError(f"Model {args.model_name_or_path} not supported")
     # configure prompts for MBPP-S_test
@@ -766,7 +791,7 @@ def main():
         elif args.model_name_or_path in FOUNDATION_MODELS:
             # both nl_2_pl and pl_2_nl prompts are the same for completion models
             nl_2_pl_prompt = ONE_SHOT_MBPP
-            pl_2_nl_prompt = ONE_SHOT_MBPP
+            pl_2_nl_prompt = ONE_SHOT_FIM_MBPP
         else:
             raise ValueError(f"Model {args.model_name_or_path} not supported")
     else:
