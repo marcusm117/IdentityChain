@@ -85,9 +85,9 @@ def reformat_fields(output_path, EvalPlus_tasks):
                 and output_path == "../data/EvalPlus-Mini-v0.1.9_reformatted.jsonl"
             ):
                 reformatted_task["contract"] = "\n    try: # $_CONTRACT_$\n        assert isinstance(value, str) "
-                + "# $_CONTRACT_$\n        value = float(value) # $_CONTRACT_$\n    except: # $_CONTRACT_$\n        "
-                + "raise Exception(\"invalid inputs\") # $_CONTRACT_$\n    import math # $_CONTRACT_$\n    "
-                + "assert not (math.isinf(value) or math.isnan(value)), \"invalid inputs\" # $_CONTRACT_$\n"
+                +"# $_CONTRACT_$\n        value = float(value) # $_CONTRACT_$\n    except: # $_CONTRACT_$\n        "
+                +"raise Exception(\"invalid inputs\") # $_CONTRACT_$\n    import math # $_CONTRACT_$\n    "
+                +"assert not (math.isinf(value) or math.isnan(value)), \"invalid inputs\" # $_CONTRACT_$\n"
 
             # write the reformatted task to the output file
             writer.write(json.dumps(reformatted_task) + "\n")
@@ -135,18 +135,12 @@ def reformat_tests(output_path, EvalPlus_tasks):
                 EvalPlus_task["base_input"].pop(1)
                 inputs = EvalPlus_task["base_input"] + EvalPlus_task["plus_input"]
             # remove an invalid input in HumanEvalPlus-Mini/1, for HumanEvalPlus-Mini-v0.1.9 only
-            elif (
-                task_id == "HumanEval/1"
-                and output_path == "../data/EvalPlus-Mini-v0.1.9_reformatted.jsonl"
-            ):
+            elif task_id == "HumanEval/1" and output_path == "../data/EvalPlus-Mini-v0.1.9_reformatted.jsonl":
                 EvalPlus_task["plus_input"].pop(1)
                 EvalPlus_task["plus_input"].pop(-2)
                 inputs = EvalPlus_task["base_input"] + EvalPlus_task["plus_input"]
             # remove an invalid input in HumanEvalPlus-Mini/28, for HumanEvalPlus-Mini-v0.1.9 only
-            elif (
-                task_id == "HumanEval/28"
-                and output_path == "../data/EvalPlus-Mini-v0.1.9_reformatted.jsonl"
-            ):
+            elif task_id == "HumanEval/28" and output_path == "../data/EvalPlus-Mini-v0.1.9_reformatted.jsonl":
                 EvalPlus_task["plus_input"].pop(1)
                 inputs = EvalPlus_task["base_input"] + EvalPlus_task["plus_input"]
             # otherwise, concatenate the base_inputs and plus_inputs
