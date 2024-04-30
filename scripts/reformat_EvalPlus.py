@@ -84,10 +84,12 @@ def reformat_fields(output_path, EvalPlus_tasks):
                 reformatted_task["task_id"] == "HumanEval/99"
                 and output_path == "../data/EvalPlus-Mini-v0.1.9_reformatted.jsonl"
             ):
-                reformatted_task["contract"] = "\n    try: # $_CONTRACT_$\n        assert isinstance(value, str) "
-                +"# $_CONTRACT_$\n        value = float(value) # $_CONTRACT_$\n    except: # $_CONTRACT_$\n        "
-                +"raise Exception(\"invalid inputs\") # $_CONTRACT_$\n    import math # $_CONTRACT_$\n    "
-                +"assert not (math.isinf(value) or math.isnan(value)), \"invalid inputs\" # $_CONTRACT_$\n"
+                reformatted_task["contract"] = (
+                    "\n    try: # $_CONTRACT_$\n        assert isinstance(value, str) "
+                    "# $_CONTRACT_$\n        value = float(value) # $_CONTRACT_$\n    except: # $_CONTRACT_$\n        "
+                    "raise Exception(\"invalid inputs\") # $_CONTRACT_$\n    import math # $_CONTRACT_$\n    "
+                    "assert not (math.isinf(value) or math.isnan(value)), \"invalid inputs\" # $_CONTRACT_$\n"
+                )
 
             # write the reformatted task to the output file
             writer.write(json.dumps(reformatted_task) + "\n")
