@@ -25,6 +25,25 @@ FOUNDATION_MODELS = [
     "codellama/CodeLlama-7b-hf",
     "codellama/CodeLlama-13b-hf",
     "codellama/CodeLlama-34b-hf",
+    "codellama/CodeLlama-70b-hf",
+    "deepseek-ai/deepseek-coder-1.3b-base",
+    "deepseek-ai/deepseek-coder-6.7b-base",
+    "deepseek-ai/deepseek-coder-33b-base",
+    "deepseek-ai/deepseek-coder-7b-base-v1.5",
+]
+
+
+# a list of supported Instruction-Tuned Models
+INSTRUCTION_MODELS = [
+    "codellama/CodeLlama-7b-Instruct-hf",
+    "codellama/CodeLlama-13b-Instruct-hf",
+    "codellama/CodeLlama-34b-Instruct-hf",
+    "codellama/CodeLlama-70b-Instruct-hf",
+    "HuggingFaceH4/starchat-beta",
+    "deepseek-ai/deepseek-coder-1.3b-instruct",
+    "deepseek-ai/deepseek-coder-6.7b-instruct",
+    "deepseek-ai/deepseek-coder-33b-instruct",
+    "deepseek-ai/deepseek-coder-7b-instruct-v1.5",
 ]
 
 
