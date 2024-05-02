@@ -487,9 +487,6 @@ def get_completion_codellama_instruct_pl_to_nl(prompt, user_input, model, tokeni
 
     # post-processing
     processed_completion = post_processing_pl_to_nl(completion)
-
-    # DEBUG
-    print(processed_completion)
     return processed_completion
 
 

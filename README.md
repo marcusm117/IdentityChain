@@ -43,7 +43,7 @@ To evaluate your model using IdentityChain, you need to prepare the followings:
 
 1. An evaluation dataset from one of the followings (or one of your own in the same format):
    - [EvalPlus-Mini-v0.1.6_reformatted.jsonl](./data/EvalPlus-Mini-v0.1.6_reformatted.jsonl.gz)
-   - [EvalPlus-Mini-v0.1.9_reformatted.jsonl](./data/EvalPlus-Mini-v0.1.9_reformatted.jsonl.gz)
+   - [EvalPlus-Mini-v0.1.10_reformatted.jsonl](./data/EvalPlus-Mini-v0.1.10_reformatted.jsonl.gz)
    - [MBPP-S_test_reformatted.jsonl](./data/MBPP-S_test_reformatted.jsonl.gz)
 2. An NL-to-PL prompt for your model
 3. A PL-to-NL prompt for your model

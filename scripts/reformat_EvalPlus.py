@@ -199,7 +199,7 @@ def reformat_tests(output_path, EvalPlus_tasks):
 
 
 # EXAMPLE USAGE:
-# python reformat_EvalPlus.py --evalplus_path ../data/HumanEval/HumanEvalPlus-Mini-v0.1.9.jsonl.gz
+# python reformat_EvalPlus.py --evalplus_path ../data/HumanEval/HumanEvalPlus-Mini-v0.1.10.jsonl.gz
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--evalplus_path", type=str, required=True)
