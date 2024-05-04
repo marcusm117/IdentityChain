@@ -16,7 +16,7 @@ name = "identitychain"
 authors = [{name = "marcusm117, Robin-Y-Ding", email = "authors@gmail.com"}]
 description="Evaluation Framework for Code Large Language Models (Code LLMs)"
 readme = "README.md"
-version = "0.0.1"
+version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = []
 classifiers = [

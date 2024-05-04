@@ -16,15 +16,34 @@ from identitychain import unsafe_execute
 # a list of supported Foundation Models
 # PL-2-NL generation for Foundation Model is Fill-In-the-Middle (FIM)
 FOUNDATION_MODELS = [
-    "bigcode/starcoder",
-    "bigcode/starcoderplus",
-    "bigcode/starcoderbase",
-    "bigcode/starcoderbase-7b",
-    "bigcode/starcoderbase-3b",
-    "bigcode/starcoderbase-1b",
     "codellama/CodeLlama-7b-hf",
     "codellama/CodeLlama-13b-hf",
     "codellama/CodeLlama-34b-hf",
+    "codellama/CodeLlama-70b-hf",
+    "bigcode/starcoderbase-1b",
+    "bigcode/starcoderbase-3b",
+    "bigcode/starcoderbase-7b",
+    "bigcode/starcoderbase",
+    "bigcode/starcoderplus",
+    "bigcode/starcoder",
+    "deepseek-ai/deepseek-coder-1.3b-base",
+    "deepseek-ai/deepseek-coder-6.7b-base",
+    "deepseek-ai/deepseek-coder-33b-base",
+    "deepseek-ai/deepseek-coder-7b-base-v1.5",
+]
+
+
+# a list of supported Instruction-Tuned Models
+INSTRUCTION_MODELS = [
+    "codellama/CodeLlama-7b-Instruct-hf",
+    "codellama/CodeLlama-13b-Instruct-hf",
+    "codellama/CodeLlama-34b-Instruct-hf",
+    "codellama/CodeLlama-70b-Instruct-hf",
+    "HuggingFaceH4/starchat-beta",
+    "deepseek-ai/deepseek-coder-1.3b-instruct",
+    "deepseek-ai/deepseek-coder-6.7b-instruct",
+    "deepseek-ai/deepseek-coder-33b-instruct",
+    "deepseek-ai/deepseek-coder-7b-instruct-v1.5",
 ]
 
 

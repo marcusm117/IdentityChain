@@ -7,7 +7,9 @@ temp_files/
 
 # unzipped data
 data/EvalPlus-Mini-v0.1.6_reformatted.jsonl
+data/EvalPlus-Mini-v0.1.9_reformatted.jsonl
 data/MBPP-S_test_reformatted.jsonl
+data/MbppPlus-v0.1.0_reformatted.jsonl
 
 # Coverage Report
 python_junit.xml

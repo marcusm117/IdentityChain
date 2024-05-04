@@ -11,7 +11,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
 
 # Internal Modules
-from identitychain import IdentityChain
+from identitychain import IdentityChain, INSTRUCTION_MODELS, FOUNDATION_MODELS
 from identitychain.dialogue import (
     DialogueTemplate,
     get_dialogue_template,
@@ -23,26 +23,6 @@ from identitychain.utils import g_unzip
 
 # set random seed
 set_seed(42)
-
-
-# Instruction-tuned Models and Foundation Models have different nl_2_pl/pl_2_nl prompts and functions
-INSTRUCTION_MODELS = [
-    "codellama/CodeLlama-7b-Instruct-hf",
-    "codellama/CodeLlama-13b-Instruct-hf",
-    "codellama/CodeLlama-34b-Instruct-hf",
-    "HuggingFaceH4/starchat-beta",
-]
-FOUNDATION_MODELS = [
-    "bigcode/starcoder",
-    "bigcode/starcoderplus",
-    "bigcode/starcoderbase",
-    "bigcode/starcoderbase-7b",
-    "bigcode/starcoderbase-3b",
-    "bigcode/starcoderbase-1b",
-    "codellama/CodeLlama-7b-hf",
-    "codellama/CodeLlama-13b-hf",
-    "codellama/CodeLlama-34b-hf",
-]
 
 
 # prompt settings
@@ -187,15 +167,30 @@ PL_2_NL_MBPP = [
 
 ONE_SHOT_HUMANEVAL = (
     'def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    '
-    + '"""Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    '
-    + '>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    '
-    + 'True\n    """\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        '
-    + 'if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False\n\n'
+    '"""Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    '
+    '>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    '
+    'True\n    """\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        '
+    'if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False\n\n'
+)
+
+ONE_SHOT_FIM_HUMANEVAL = (
+    '<pre_token>def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    """\n'
+    '<suf_token>    """\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        '
+    'if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False\n\n'
+    '<mid_token>'
+    'Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    '
+    '>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n'
 )
 
 ONE_SHOT_MBPP = (
     'def similar_elements(test_tup1, test_tup2):\n    """ Write a function to find the shared elements from the given two lists.\n    '
-    + '"""\n    res = tuple(set(test_tup1) & set(test_tup2))\n    return (res)\n\n'
+    '"""\n    res = tuple(set(test_tup1) & set(test_tup2))\n    return (res)\n\n'
+)
+
+ONE_SHOT_FIM_MBPP = (
+    '<pre_token>def similar_elements(test_tup1, test_tup2):\n    """\n'
+    '<suf_token>    """\n    res = tuple(set(test_tup1) & set(test_tup2))\n    return (res)\n\n'
+    '<mid_token>Write a function to find the shared elements from the given two lists.\n'
 )
 
 
@@ -218,7 +213,7 @@ def generate_text(model, tokenizer, prompt_text, args, eos_token_id=None):
         max_length = args.seq_length
     else:
         max_length = input_ids.shape[1] + args.gen_length
-    print("Generating text...")
+    print("Generating Text...")
     generated_sequence = model.generate(
         input_ids=input_ids.to(model.device),
         attention_mask=attention_mask.to(model.device),
@@ -236,7 +231,7 @@ def generate_text(model, tokenizer, prompt_text, args, eos_token_id=None):
     generated_sequence = generated_sequence.reshape(in_b, out_b // in_b, *generated_sequence.shape[1:])
     generated_sequence = generated_sequence[0].cpu().numpy().tolist()
     records = []
-    print("Decoding text...")
+    print("Decoding Text...")
     for sequence in generated_sequence:
         text = tokenizer.decode(sequence, skip_special_tokens=True)
         prompt_length = len(tokenizer.decode(input_ids[0], skip_special_tokens=True))
@@ -246,33 +241,38 @@ def generate_text(model, tokenizer, prompt_text, args, eos_token_id=None):
     return records
 
 
-def get_completion_starchat_nl_to_pl(prompt, user_input, model, tokenizer, args):
-    # select the correct in-context learning prompt based on the task
-    messages = prompt + [{"role": "user", "content": user_input}]
-    try:
-        dialogue_template = DialogueTemplate.from_pretrained(args.model_name_or_path)
-    except Exception:
-        print("No dialogue template found in model repo. Defaulting to the `no_system` template.")
-        dialogue_template = get_dialogue_template("no_system")
-    dialogue_template.messages = messages
-    formatted_prompt = dialogue_template.get_inference_prompt_nl_to_pl()
-    # Debug
-    # print(formatted_prompt)
-    # get completion from code lm
-    output = generate_text(
-        model,
-        tokenizer,
-        formatted_prompt,
-        args,
-        eos_token_id=tokenizer.convert_tokens_to_ids(dialogue_template.end_token),
-    )
-    completion = output[0]["generated_text"]
-    # post-processing
+def post_processing_nl_to_pl(completion):
+    # DEBUG
+    print(completion)
+    print("Post-Processing Text...")
+
+    # separate the completion into lines
     completion_lines = completion.split("\n")
     processed_completion = ""
-    for line in completion_lines:
+    for idx, line in enumerate(completion_lines):
         if line.startswith("    "):
             processed_completion += line + "\n"
+        # omit everything after the end of the first function body
+        if line.startswith("    return "):
+            break
+        if "return" in line:
+            # if the next line is non-empty, then discard all docstrings + anything without an indentation
+            if idx < len(completion_lines) - 1 and completion_lines[idx + 1] != "":
+                if (
+                    completion_lines[idx + 1].startswith("    \"\"\"")
+                    or completion_lines[idx + 1].startswith("    '''")
+                    or not completion_lines[idx + 1].startswith("    ")
+                ):
+                    break
+            # if the next line is empty, check the line after it
+            if idx < len(completion_lines) - 2 and completion_lines[idx + 1] == "":
+                if (
+                    completion_lines[idx + 2].startswith("    \"\"\"")
+                    or completion_lines[idx + 2].startswith("    '''")
+                    or not completion_lines[idx + 2].startswith("    ")
+                ):
+                    break
+
     # remove extra docstring
     # find all occurrences of three consecutive double quotes
     res = [i for i in range(len(processed_completion)) if processed_completion.startswith('"""', i)]
@@ -290,33 +290,17 @@ def get_completion_starchat_nl_to_pl(prompt, user_input, model, tokenizer, args)
         except IndexError:
             pass
 
-    # Debug
+    # DEBUG
     print(processed_completion)
     return processed_completion
 
 
-def get_completion_starchat_pl_to_nl(prompt, user_input, model, tokenizer, args):
-    # select the correct in-context learning prompt based on the task
-    messages = prompt + [{"role": "user", "content": user_input}]
-    try:
-        dialogue_template = DialogueTemplate.from_pretrained(args.model_name_or_path)
-    except Exception:
-        print("No dialogue template found in model repo. Defaulting to the `no_system` template.")
-        dialogue_template = get_dialogue_template("no_system")
-    dialogue_template.messages = messages
-    formatted_prompt = dialogue_template.get_inference_prompt_pl_to_nl()
-    # Debug
-    # print(formatted_prompt)
-    # get completion from code lm
-    output = generate_text(
-        model,
-        tokenizer,
-        formatted_prompt,
-        args,
-        eos_token_id=tokenizer.convert_tokens_to_ids(dialogue_template.end_token),
-    )
-    completion = output[0]["generated_text"]
-    # post-processing: extract the docstring
+def post_processing_pl_to_nl(completion):
+    # DEBUG
+    print(completion)
+    print("Post-Processing Text...")
+
+    # extract the docstring
     completion = completion.replace("python", "")
     completion_parts = completion.split("```")
     if len(completion_parts) > 1:
@@ -332,15 +316,121 @@ def get_completion_starchat_pl_to_nl(prompt, user_input, model, tokenizer, args)
     if not completion.startswith('"""'):
         completion = '"""' + completion
     if not completion.endswith('"""'):
-        completion = completion + '\n"""'
+        completion = completion.rstrip() + '\n"""'
+
+    # add indentation if missing
     completion_lines = completion.split("\n")
     for idx, line in enumerate(completion_lines):
         if not line.startswith("    "):
-            completion_lines[idx] = "    " + line
-    completion = "\n".join(completion_lines)
-    # Debug
+            completion_lines[idx] = "    " + line.lstrip()
+    processed_completion = "\n".join(completion_lines)
+
+    # add docstring guards if not present
+    if processed_completion.startswith('    """') and not processed_completion.endswith('"""'):
+        processed_completion = processed_completion + '"""'
+    elif processed_completion.startswith("    '''") and not processed_completion.endswith("'''"):
+        processed_completion = processed_completion + "'''"
+
+    # DEBUG
+    print(processed_completion)
+    return processed_completion
+
+
+def fill_in_middle(
+    prompt,
+    function_signature,
+    function_body,
+    model,
+    tokenizer,
+    args,
+    pre_token,
+    suf_token,
+    mid_token,
+):
+    # custimize the one-shot example by replacing the string "<pre-token>" with the actual pre-token etc.
+    prompt = (
+        prompt.replace("<pre_token>", pre_token).replace("<suf_token>", suf_token).replace("<mid_token>", mid_token)
+    )
+    fim_prompt = ""
+
+    # construct the fill-in-the-middle prompt
+    fim_prompt += (
+        prompt
+        + pre_token
+        + function_signature
+        + "    \"\"\"\n    "
+        + suf_token
+        + "    \"\"\"\n"
+        + function_body
+        + mid_token
+    )
+
+    # DEBUG
+    # print(fim_prompt)
+
+    output = generate_text(model, tokenizer, fim_prompt, args)
+    completion = output[0]["generated_text"]
+    completion = "    \"\"\"\n    " + completion + "    \"\"\"\n"
+
+    # DEBUG
     print(completion)
     return completion
+
+
+def get_completion_starchat_nl_to_pl(prompt, user_input, model, tokenizer, args):
+    # select the correct in-context learning prompt based on the task
+    messages = prompt + [{"role": "user", "content": user_input}]
+    try:
+        dialogue_template = DialogueTemplate.from_pretrained(args.model_name_or_path)
+    except Exception:
+        print("No dialogue template found in model repo. Defaulting to the `no_system` template.")
+        dialogue_template = get_dialogue_template("no_system")
+    dialogue_template.messages = messages
+    formatted_prompt = dialogue_template.get_inference_prompt_nl_to_pl()
+
+    # DEBUG
+    # print(formatted_prompt)
+    # get completion from code lm
+    output = generate_text(
+        model,
+        tokenizer,
+        formatted_prompt,
+        args,
+        eos_token_id=tokenizer.convert_tokens_to_ids(dialogue_template.end_token),
+    )
+    completion = output[0]["generated_text"]
+
+    # post-processing
+    processed_completion = post_processing_nl_to_pl(completion)
+    return processed_completion
+
+
+def get_completion_starchat_pl_to_nl(prompt, user_input, model, tokenizer, args):
+    # select the correct in-context learning prompt based on the task
+    messages = prompt + [{"role": "user", "content": user_input}]
+    try:
+        dialogue_template = DialogueTemplate.from_pretrained(args.model_name_or_path)
+    except Exception:
+        print("No dialogue template found in model repo. Defaulting to the `no_system` template.")
+        dialogue_template = get_dialogue_template("no_system")
+    dialogue_template.messages = messages
+    formatted_prompt = dialogue_template.get_inference_prompt_pl_to_nl()
+
+    # DEBUG
+    # print(formatted_prompt)
+    # get completion from code lm
+    output = generate_text(
+        model,
+        tokenizer,
+        formatted_prompt,
+        args,
+        eos_token_id=tokenizer.convert_tokens_to_ids(dialogue_template.end_token),
+    )
+    completion = output[0]["generated_text"]
+
+    # post-processing
+    processed_completion = post_processing_pl_to_nl(completion)
+    return processed_completion
 
 
 def get_completion_codellama_instruct_nl_to_pl(
@@ -358,37 +448,14 @@ def get_completion_codellama_instruct_nl_to_pl(
         # system prompt doesn't work well for Code Llama-Instructs
         # elif msg["role"] == "system":
         #     formatted_prompt += f"{B_SYS_CLLAMA}" + msg["content"] + f"{E_SYS_CLLAMA}"
-    # Debug
+
+    # DEBUG
     # print(formatted_prompt)
     output = generate_text(model, tokenizer, formatted_prompt, args)
     completion = output[0]["generated_text"]
 
     # post-processing
-    completion_lines = completion.split("\n")
-    processed_completion = ""
-    for line in completion_lines:
-        if line.startswith("    "):
-            processed_completion += line + "\n"
-
-    # remove extra docstring
-    # find all occurrences of three consecutive double quotes
-    res = [i for i in range(len(processed_completion)) if processed_completion.startswith('"""', i)]
-    # if res is empty, check for both single quotes
-    if not res:
-        res = [i for i in range(len(processed_completion)) if processed_completion.startswith("'''", i)]
-    # if found an extra docstring, remove it
-    if res:
-        # get end position of the extra docstring, remove everything before it
-        try:
-            end_position = res[1] + 3
-            processed_completion = processed_completion[end_position:]
-            if processed_completion.startswith("\n"):
-                processed_completion = processed_completion[1:]
-        except IndexError:
-            pass
-
-    # Debug
-    print(processed_completion)
+    processed_completion = post_processing_nl_to_pl(completion)
     return processed_completion
 
 
@@ -413,24 +480,76 @@ def get_completion_codellama_instruct_pl_to_nl(prompt, user_input, model, tokeni
             formatted_prompt += tokenizer.bos_token + "[INST] " + content + " [/INST] "
         elif msg["role"] == "assistant":
             formatted_prompt += " " + msg["content"].strip() + " " + tokenizer.eos_token
-    # Debug
+    # DEBUG
     # print(formatted_prompt)
     output = generate_text(model, tokenizer, formatted_prompt, args)
     completion = output[0]["generated_text"]
+
     # post-processing
-    completion_lines = completion.split("\n")
-    for idx, line in enumerate(completion_lines):
-        if not line.startswith("    "):
-            completion_lines[idx] = "    " + line.lstrip()
-    completion = "\n".join(completion_lines)
-    # add docstring guards if not present
-    if completion.startswith('    """') and not completion.endswith('"""'):
-        completion = completion + '"""'
-    elif completion.startswith("    '''") and not completion.endswith("'''"):
-        completion = completion + "'''"
-    # Debug
-    print(completion)
-    return completion
+    processed_completion = post_processing_pl_to_nl(completion)
+    return processed_completion
+
+
+def get_completion_deepseek_instruct_nl_to_pl(
+    prompt, user_input, model, tokenizer, args
+):  # reference: https://github.com/deepseek-ai/DeepSeek-Coder/blob/main/README.md
+    # select the correct in-context learning prompt based on the task
+    # remove the last system prompt
+    messages = prompt[:-1] + [{"role": "user", "content": user_input}]
+
+    input_ids = tokenizer.apply_chat_template(messages, add_generation_prompt=True, return_tensors="pt").to(
+        model.device
+    )
+    print("Generating Text...")
+    generated_sequence = model.generate(
+        input_ids=input_ids,
+        max_length=args.seq_length,
+        do_sample=args.do_sample,
+        num_beams=args.num_beams,
+        temperature=args.temperature,
+        top_k=args.top_k,
+        top_p=args.top_p,
+        num_return_sequences=args.num_return_sequences,
+        pad_token_id=tokenizer.pad_token_id,
+        eos_token_id=tokenizer.eos_token_id,
+    )
+    print("Decoding Text...")
+    completion = tokenizer.decode(generated_sequence[0][len(input_ids[0]) :], skip_special_tokens=True)
+
+    # post-processing
+    processed_completion = post_processing_nl_to_pl(completion)
+    return processed_completion
+
+
+def get_completion_deepseek_instruct_pl_to_nl(
+    prompt, user_input, model, tokenizer, args
+):  # reference: https://github.com/deepseek-ai/DeepSeek-Coder/blob/main/README.md
+    # select the correct in-context learning prompt based on the task
+    # remove the last system prompt
+    messages = prompt[:-1] + [{"role": "user", "content": user_input}]
+
+    input_ids = tokenizer.apply_chat_template(messages, add_generation_prompt=True, return_tensors="pt").to(
+        model.device
+    )
+    print("Generating Text...")
+    generated_sequence = model.generate(
+        input_ids=input_ids,
+        max_length=args.seq_length,
+        do_sample=args.do_sample,
+        num_beams=args.num_beams,
+        temperature=args.temperature,
+        top_k=args.top_k,
+        top_p=args.top_p,
+        num_return_sequences=args.num_return_sequences,
+        pad_token_id=tokenizer.pad_token_id,
+        eos_token_id=tokenizer.eos_token_id,
+    )
+    print("Decoding Text...")
+    completion = tokenizer.decode(generated_sequence[0][len(input_ids[0]) :], skip_special_tokens=True)
+
+    # post-processing
+    processed_completion = post_processing_pl_to_nl(completion)
+    return processed_completion
 
 
 def get_completion_codellama(
@@ -439,36 +558,26 @@ def get_completion_codellama(
     user_input = prompt + user_input
     output = generate_text(model, tokenizer, user_input, args)
     completion = output[0]["generated_text"]
-    # post-processing: extract the function body
-    processed_completion = ""
-    completion_lines = completion.split("\n")
-    for line in completion_lines:
-        if line.startswith("    "):
-            processed_completion += line + "\n"
-        else:
-            break
-    # Debug
-    print(processed_completion)
+
+    # post-processing
+    processed_completion = post_processing_nl_to_pl(completion)
     return processed_completion
 
 
 def get_completion_codellama_fim(
     prompt, function_signature, function_body, model, tokenizer, args
-):  # prompt is ONE_SHOT_HUMANEVAL or ONE_SHOT_MBPP
-    function_signature = prompt + function_signature
-    fim_prompt = ""
-    # check indent
-    fim_prompt += (
-        " <PRE>" + function_signature + "    \"\"\"\n    " + " <SUF>" + "    \"\"\"\n" + function_body + " <MID>"
+):  # prompt is ONE_SHOT_FIM_HUMANEVAL or ONE_SHOT_FIM_MBPP
+    return fill_in_middle(
+        prompt=prompt,
+        function_signature=function_signature,
+        function_body=function_body,
+        model=model,
+        tokenizer=tokenizer,
+        args=args,
+        pre_token=" <PRE>",
+        suf_token=" <SUF>",
+        mid_token=" <MID>",
     )
-    # Debug
-    # print(fim_prompt)
-    output = generate_text(model, tokenizer, fim_prompt, args)
-    completion = output[0]["generated_text"]
-    completion = "    \"\"\"\n    " + completion + "    \"\"\"\n"
-    # Debug
-    print(completion)
-    return completion
 
 
 def get_completion_starcoder(
@@ -477,43 +586,54 @@ def get_completion_starcoder(
     user_input = prompt + user_input
     output = generate_text(model, tokenizer, user_input.strip(), args)
     completion = output[0]["generated_text"]
-    # post-processing: extract the function body
-    processed_completion = ""
-    completion_lines = completion.split("\n")
-    start = False
-    for line in completion_lines:
-        if line.startswith("    "):
-            start = True
-            processed_completion += line + "\n"
-        else:
-            if start:
-                break
-    # Debug
-    print(processed_completion)
+
+    # post-processing
+    processed_completion = post_processing_nl_to_pl(completion)
     return processed_completion
 
 
 def get_completion_starcoder_fim(
     prompt, function_signature, function_body, model, tokenizer, args
-):  # prompt is ONE_SHOT_HUMANEVAL or ONE_SHOT_MBPP
-    function_signature = prompt + function_signature
-    fim_prompt = ""
-    # TODO check indent
-    fim_prompt += (
-        "<fim_prefix>"
-        + function_signature
-        + "    \"\"\""
-        + "<fim_suffix>"
-        + "\"\"\"\n"
-        + function_body
-        + "<fim_middle>"
+):  # prompt is ONE_SHOT_FIM_HUMANEVAL or ONE_SHOT_FIM_MBPP
+    return fill_in_middle(
+        prompt=prompt,
+        function_signature=function_signature,
+        function_body=function_body,
+        model=model,
+        tokenizer=tokenizer,
+        args=args,
+        pre_token="<fim_prefix>",
+        suf_token="<fim_suffix>",
+        mid_token="<fim_middle>",
     )
-    output = generate_text(model, tokenizer, fim_prompt, args)
+
+
+def get_completion_deepseek(
+    prompt, user_input, model, tokenizer, args
+):  # prompt is ONE_SHOT_HUMANEVAL or ONE_SHOT_MBPP
+    user_input = prompt + user_input
+    output = generate_text(model, tokenizer, user_input.strip(), args)
     completion = output[0]["generated_text"]
-    completion = "    \"\"\"" + completion + "\"\"\"\n"
-    # Debug
-    print(completion)
-    return completion
+
+    # post-processing
+    processed_completion = post_processing_nl_to_pl(completion)
+    return processed_completion
+
+
+def get_completion_deepseek_fim(
+    prompt, function_signature, function_body, model, tokenizer, args
+):  # prompt is ONE_SHOT_FIM_HUMANEVAL or ONE_SHOT_FIM_MBPP
+    return fill_in_middle(
+        prompt=prompt,
+        function_signature=function_signature,
+        function_body=function_body,
+        model=model,
+        tokenizer=tokenizer,
+        args=args,
+        pre_token="<｜fim▁begin｜>",
+        suf_token="<｜fim▁hole｜>",
+        mid_token="<｜fim▁end｜>",
+    )
 
 
 # EXAMPLE USAGE:
@@ -631,12 +751,22 @@ def main():
         else:
             nl_2_pl_function = get_completion_codellama
             pl_2_nl_function = get_completion_codellama_fim
+    # configure function for deepseekcoder models
+    elif "deepseek-ai" in args.model_name_or_path:
+        # configure functions for deepseekcoder chat models
+        if "instruct" in args.model_name_or_path:
+            nl_2_pl_function = get_completion_deepseek_instruct_nl_to_pl
+            pl_2_nl_function = get_completion_deepseek_instruct_pl_to_nl
+        # configure functions for deepseekcoder completion models
+        else:
+            nl_2_pl_function = get_completion_deepseek
+            pl_2_nl_function = get_completion_deepseek_fim
     else:
         raise ValueError(f"Model {args.model_name_or_path} not supported")
 
     # configure nl_2_pl/pl_2_nl prompts based on the model and input dataset
-    # configure prompts for HumanEvalPlus-Mini-v0.1.6
-    if args.input_path.endswith("EvalPlus-Mini-v0.1.6_reformatted.jsonl"):
+    # configure prompts for HumanEvalPlus-Mini-v0.1.6 or v0.1.9
+    if "EvalPlus-Mini" in args.input_path:
         # configure prompt for supported chat models
         if args.model_name_or_path in INSTRUCTION_MODELS:
             nl_2_pl_prompt = NL_2_PL_HUMANEVAL
@@ -645,7 +775,7 @@ def main():
         elif args.model_name_or_path in FOUNDATION_MODELS:
             # both nl_2_pl and pl_2_nl prompts are the same for completion models
             nl_2_pl_prompt = ONE_SHOT_HUMANEVAL
-            pl_2_nl_prompt = ONE_SHOT_HUMANEVAL
+            pl_2_nl_prompt = ONE_SHOT_FIM_HUMANEVAL
         else:
             raise ValueError(f"Model {args.model_name_or_path} not supported")
     # configure prompts for MBPP-S_test
@@ -658,13 +788,13 @@ def main():
         elif args.model_name_or_path in FOUNDATION_MODELS:
             # both nl_2_pl and pl_2_nl prompts are the same for completion models
             nl_2_pl_prompt = ONE_SHOT_MBPP
-            pl_2_nl_prompt = ONE_SHOT_MBPP
+            pl_2_nl_prompt = ONE_SHOT_FIM_MBPP
         else:
             raise ValueError(f"Model {args.model_name_or_path} not supported")
     else:
         raise ValueError(f"Input file {args.input_path} not supported")
 
-    # for debugging
+    # for DEBUGging
     print("--------- Prompt Configuration -----------")
     print(nl_2_pl_prompt)
     print(pl_2_nl_prompt)

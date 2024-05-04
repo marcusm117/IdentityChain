@@ -41,8 +41,9 @@ Before the self-consistency evaluation, you need to make sure that one of the fo
 
 To evaluate your model using IdentityChain, you need to prepare the followings:
 
-1. An evaluation dataset in the format of one of the followings (you can also use these two directly):
+1. An evaluation dataset from one of the followings (or one of your own in the same format):
    - [EvalPlus-Mini-v0.1.6_reformatted.jsonl](./data/EvalPlus-Mini-v0.1.6_reformatted.jsonl.gz)
+   - [EvalPlus-Mini-v0.1.10_reformatted.jsonl](./data/EvalPlus-Mini-v0.1.10_reformatted.jsonl.gz)
    - [MBPP-S_test_reformatted.jsonl](./data/MBPP-S_test_reformatted.jsonl.gz)
 2. An NL-to-PL prompt for your model
 3. A PL-to-NL prompt for your model
@@ -51,14 +52,18 @@ To evaluate your model using IdentityChain, you need to prepare the followings:
 
 See [run_identity_chain_openai.py](./examples/run_identity_chain_openai.py) for an example of how to use IdentityChain to evaluate OpenAI models.
 
+See [run_identity_chain_google.py](./examples/run_identity_chain_google.py) for an example of how to use IdentityChain to evaluate Google models.
+
 See [run_identity_chain_huggingface.py](./examples/run_identity_chain_huggingface.py) for an example of how to use IdentityChain to evaluate HuggingFace open-source models. This example script already includes the following models:
 
-1. CodeLlama-Instruct-hf (7B, 13B, 34B)
-2. CodeLlama-hf (7B, 13B, 34B)
-3. starchat-beta
-4. starcoder
-5. starcoderplus
-6. starcoderbase (1B, 3B, 7B, 15B)
+1. CodeLlama-Instruct-hf (7B, 13B, 34B, 70B)
+2. CodeLlama-hf (7B, 13B, 34B, 70B)
+3. StarChat-Beta
+4. StarCoder
+5. StarCoderPlus
+6. StarCoderBase (1B, 3B, 7B, 15B)
+7. DeepSeekCoder-Instruct (1.3B, 6.7B, 33B, 7B-v1.5)
+8. DeepSeekCoder (1.3B, 6.7B, 33B, 7B-v1.5)
 
 ## Example
 
