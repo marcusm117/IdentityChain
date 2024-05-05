@@ -11,6 +11,9 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
 
 # Internal Modules
+# INSTRUCTION_MODELS and FOUNDATION_MODELS record the model names supported by
+# run_identity_chain_huggingface.py. If you want to adapt this script to other
+# huggingface or local models, add the names to the corresponding list.
 from identitychain import IdentityChain, INSTRUCTION_MODELS, FOUNDATION_MODELS
 from identitychain.dialogue import (
     DialogueTemplate,
